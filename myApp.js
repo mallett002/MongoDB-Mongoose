@@ -3,86 +3,46 @@
 * ==================================
 ***********************************************/
 
-/** # MONGOOSE SETUP #
-/*  ================== */
+/** 1) Install & Set up mongoose --------------------------------------------------------------------*/
 
-/** 1) Install & Set up mongoose */
-
-// Add `mongodb` and `mongoose` to the project's `package.json`. Then require 
-// `mongoose`. Store your **mLab** database URI in the private `.env` file 
-// as `MONGO_URI`. Connect to the database using `mongoose.connect(<Your URI>)`
 var mongoose = require('mongoose');
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true });
 
-/** # SCHEMAS and MODELS #
-/*  ====================== */
 
-/** 2) Create a 'Person' Model */
+/** 2) Create a 'Person' Model -----------------------------------------------------------------------*/
 
-// First of all we need a **Schema**. Each schema maps to a MongoDB collection
-// and defines the shape of the documents within that collection. Schemas are
-// building block for Models. They can be nested to create complex models,
-// but in this case we'll keep things simple. A model allows you to create
-// instances of your objects, called **documents**.
+// Schema defines shape of the documents
+var Schema = mongoose.Schema;
 
-// Create a person having this prototype :
+var personSchema = new Schema({
+    name:  {
+      type: String,
+      required: true
+    },
+    age: Number,
+    favoriteFoods: [String]
+  });
 
-// - Person Prototype -
-// --------------------
-// name : string [required]
-// age :  number
-// favoriteFoods : array of strings (*)
+// Models use the schema to create instances called documents
+var Person = mongoose.model('Person', personSchema);
 
-// Use the mongoose basic *schema types*. If you want you can also add more
-// fields, use simple validators like `required` or `unique`, and set
-// `default` values. See the [mongoose docs](http://mongoosejs.com/docs/guide.html).
 
-// <Your code here >
 
-var Person /* = <Your Model> */
-
-// **Note**: GoMix is a real server, and in real servers interactions with
-// the db are placed in handler functions, to be called when some event happens
-// (e.g. someone hits an endpoint on your API). We'll follow the same approach
-// in these exercises. The `done()` function is a callback that tells us that
-// we can proceed after completing an asynchronous operation such as inserting,
-// searching, updating or deleting. It's following the Node convention and
-// should be called as `done(null, data)` on success, or `done(err)` on error.
-// **Warning** - When interacting with remote services, **errors may occur** !
-
-// - Example -
-// var someFunc = function(done) {
-//   ... do something (risky) ...
-//   if(error) return done(error);
-//   done(null, result);
-// };
-
-/** # [C]RUD part I - CREATE #
-/*  ========================== */
-
-/** 3) Create and Save a Person */
-
-// Create a `document` instance using the `Person` constructor you build before.
-// Pass to the constructor an object having the fields `name`, `age`,
-// and `favoriteFoods`. Their types must be conformant to the ones in
-// the Person `Schema`. Then call the method `document.save()` on the returned
-// document instance, passing to it a callback using the Node convention.
-// This is a common pattern, all the **CRUD** methods take a callback 
-// function like this as the last argument.
-
-// - Example -
-// ...
-// person.save(function(err, data) {
-//    ...do your stuff here...
-// });
+/** 3) Create and Save a Person -----------------------------------------------------------------------*/
 
 var createAndSavePerson = function(done) {
-  
-  done(null /*, data*/);
-
+  // Create a document instance of the Person Model
+  var will = new Person({name: 'Will', age: 32, favoriteFoods: ['Pizza', 'Burritos', 'Coffee']});
+  // Save the new document to the database
+  will.save((err, data) => {
+    if (err) return done(err);
+    done(null, data);
+  });
 };
 
-/** 4) Create many People with `Model.create()` */
+
+
+/** 4) Create many People with `Model.create()` ------------------------------------------------------*/
 
 // Sometimes you need to create many Instances of your Models,
 // e.g. when seeding a database with initial data. `Model.create()`
