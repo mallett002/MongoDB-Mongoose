@@ -43,7 +43,7 @@ var createAndSavePerson = function(done) {
 
 
 
-/** 4) Create many People with `Model.create()` ------------------------------------------------------*/
+/** 4) Create many People with `Model.create()` -----------------------------------------------------------*/
 
 // Wrapper function to give arrayOfPeople and done callback
 // Model.create(arrayOfdocuments, callback)
@@ -57,18 +57,16 @@ var createManyPeople = function(arrayOfPeople, done) {
 
 
 
-/** 5) Use `Model.find()` ------------------------------------------------------------------------------*/
-
-// Find all the people having a given name, using `Model.find() -> [Person]`
-// In its simplest usage, `Model.find()` accepts a **query** document (a JSON
-// object ) as the first argument, and returns an **array** of matches.
-// It supports an extremely wide range of search options. Check it in the docs.
-// Use the function argument `personName` as search key.
+/** 5) Use model.find() to Search Your Database-------------------------------------------------------------*/
+// Model.find(queryDocumentObject, callback)
+// Other optional parameters in docs: https://mongoosejs.com/docs/api.html#model_Model.find
+// Returns an array of matches
 
 var findPeopleByName = function(personName, done) {
-  
-  done(null/*, data*/);
-
+  Person.find({name: personName}, (err, data) => {
+    if (err) return done(err);
+    done(null, data);
+  });
 };
 
 /** 6) Use `Model.findOne()` */
