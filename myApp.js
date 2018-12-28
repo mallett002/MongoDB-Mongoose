@@ -14,6 +14,7 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true });
 // Schema defines shape of the documents
 var Schema = mongoose.Schema;
 
+// The schema shape definition
 var personSchema = new Schema({
     name:  {
       type: String,
@@ -28,7 +29,7 @@ var Person = mongoose.model('Person', personSchema);
 
 
 
-/** 3) Create and Save a Person -----------------------------------------------------------------------*/
+/** 3) Create and Save a Person Instance-----------------------------------------------------------------------*/
 
 var createAndSavePerson = function(done) {
   // Create a document instance of the Person Model
@@ -44,23 +45,19 @@ var createAndSavePerson = function(done) {
 
 /** 4) Create many People with `Model.create()` ------------------------------------------------------*/
 
-// Sometimes you need to create many Instances of your Models,
-// e.g. when seeding a database with initial data. `Model.create()`
-// takes an array of objects like [{name: 'John', ...}, {...}, ...],
-// as the 1st argument, and saves them all in the db.
-// Create many people using `Model.create()`, using the function argument
-// 'arrayOfPeople'.
-
+// Wrapper function to give arrayOfPeople and done callback
+// Model.create(arrayOfdocuments, callback)
+// Good for seeding database with initial data
 var createManyPeople = function(arrayOfPeople, done) {
-    
-    done(null/*, data*/);
-    
+    Person.create(arrayOfPeople, (err, data) => {
+      if (err) return done(err);
+      done(null, data);
+    });
 };
 
-/** # C[R]UD part II - READ #
-/*  ========================= */
 
-/** 5) Use `Model.find()` */
+
+/** 5) Use `Model.find()` ------------------------------------------------------------------------------*/
 
 // Find all the people having a given name, using `Model.find() -> [Person]`
 // In its simplest usage, `Model.find()` accepts a **query** document (a JSON
