@@ -69,7 +69,7 @@ var findPeopleByName = function(personName, done) {
   });
 };
 
-/** 6) Use `Model.findOne()` */
+/** 6) Use `Model.findOne()` -----------------------------------------------------------------------------*/
 
 // `Model.findOne()` behaves like `.find()`, but it returns **only one**
 // document, even if there are more. It is especially useful
@@ -82,7 +82,7 @@ var findOneByFood = function(food, done) {
   });
 };
 
-/** 7) Use `Model.findById()` */
+/** 7) Use `Model.findById()` ----------------------------------------------------------------------------*/
 
 // When saving a document, mongodb automatically adds the field `_id`,
 // and sets it to a unique alphanumeric key. Searching by `_id` is an
@@ -98,43 +98,28 @@ var findPersonById = function(personId, done) {
   });
 };
 
-/** # CR[U]D part III - UPDATE # 
-/*  ============================ */
-
-/** 8) Classic Update : Find, Edit then Save */
-
-// In the good old days this was what you needed to do if you wanted to edit
-// a document and be able to use it somehow e.g. sending it back in a server
-// response. Mongoose has a dedicated updating method : `Model.update()`,
-// which is directly binded to the low-level mongo driver.
-// It can bulk edit many documents matching certain criteria, but it doesn't
-// pass the edited document to its callback, only a 'status' message.
-// Furthermore it makes validation difficult, because it just
-// direcly calls the mongodb driver.
-
-// Find a person by Id ( use any of the above methods ) with the parameter
-// `personId` as search key. Add "hamburger" to the list of her `favoriteFoods`
-// (you can use Array.push()). Then - **inside the find callback** - `.save()`
-// the updated `Person`.
-
-// [*] Hint: This may be tricky if in your `Schema` you declared
-// `favoriteFoods` as an `Array` without specifying the type (i.e. `[String]`).
-// In that case `favoriteFoods` defaults to `Mixed` type, and you have to
-// manually mark it as edited using `document.markModified('edited-field')`
-// (http://mongoosejs.com/docs/schematypes.html - #Mixed )
+/** 8) Classic Update : Find, Edit then Save -------------------------------------------------------------*/
+// Update person's favorite food.
+// Find the person
+// push new food into favoriteFoods array
+// save the new data
 
 var findEditThenSave = function(personId, done) {
   var foodToAdd = 'hamburger';
   
-  done(null/*, data*/);
+  Person.findById(personId, (err, data) => {
+    if (err) return done(err);
+    data.favoriteFoods.push(foodToAdd);
+    data.save((err, data) => {
+      if (err) return done(err);
+      done(null, data);
+    });
+  });
 };
 
-/** 9) New Update : Use `findOneAndUpdate()` */
 
-// Recent versions of `mongoose` have methods to simplify documents updating.
-// Some more advanced features (i.e. pre/post hooks, validation) beahve
-// differently with this approach, so the 'Classic' method is still useful in
-// many situations. `findByIdAndUpdate()` can be used when searching by Id.
+/** 9) New Update : Use `findOneAndUpdate()` --------------------------------------------------------*/
+// `findByIdAndUpdate()` can be used when searching by Id.
 //
 // Find a person by `name` and set her age to `20`. Use the function parameter
 // `personName` as search key.
@@ -144,29 +129,31 @@ var findEditThenSave = function(personId, done) {
 // to `findOneAndUpdate()`. By default the method
 // passes the unmodified object to its callback.
 
+// findOneAndUpdate(conditions, update, options, callback)
+
 var findAndUpdate = function(personName, done) {
   var ageToSet = 20;
-
-  done(null/*, data*/);
+  Person.findOneAndUpdate(
+    {name: personName}, 
+    {age: ageToSet}, 
+    {new: true}, 
+    (err, data) => {
+      if (err) return done(err);
+      done(null, data);
+  });
 };
 
-/** # CRU[D] part IV - DELETE #
-/*  =========================== */
+/** 10) Delete one Person ----------------------------------------------------------------------------*/
 
-/** 10) Delete one Person */
-
-// Delete one person by her `_id`. You should use one of the methods
-// `findByIdAndRemove()` or `findOneAndRemove()`. They are similar to the
-// previous update methods. They pass the removed document to the cb.
-// As usual, use the function argument `personId` as search key.
-
+// With findByIdAndRemove
 var removeById = function(personId, done) {
-  
-  done(null/*, data*/);
-    
+  Person.findByIdAndRemove(personId, (err, data) => {
+    if (err) return done(err);
+    done(null, data);
+  });
 };
 
-/** 11) Delete many People */
+/** 11) Delete many People ------------------------------------------------------------------------------*/
 
 // `Model.remove()` is useful to delete all the documents matching given criteria.
 // Delete all the people whose name is "Mary", using `Model.remove()`.
@@ -178,14 +165,14 @@ var removeById = function(personId, done) {
 
 var removeManyPeople = function(done) {
   var nameToRemove = "Mary";
-
-  done(null/*, data*/);
+  Person.remove({ name: nameToRemove }, (err, data) => {
+    if (err) return done(err);
+    done(null, data);
+  });
 };
 
-/** # C[R]UD part V -  More about Queries # 
-/*  ======================================= */
 
-/** 12) Chain Query helpers */
+/** 12) Chain Query helpers --------------------------------------------------------------------------------*/
 
 // If you don't pass the `callback` as the last argument to `Model.find()`
 // (or to the other similar search methods introduced before), the query is
@@ -202,13 +189,15 @@ var removeManyPeople = function(done) {
 
 var queryChain = function(done) {
   var foodToSearch = "burrito";
-  
-  done(null/*, data*/);
-};
+  let findPeople = Person.find({favoriteFoods: foodToSearch})
+    .sort({ name: 1}) // 1 for ascending
+    .limit(2)  // limit of 2
+    .select({ age: 0 }); // 0 for exclude
 
-/** **Well Done !!**
-/* You completed these challenges, let's go celebrate !
- */
+  findPeople.exec((error, data) => {
+    error ? done(error) : done(error, data);
+  });
+};
 
 /** # Further Readings... #
 /*  ======================= */
